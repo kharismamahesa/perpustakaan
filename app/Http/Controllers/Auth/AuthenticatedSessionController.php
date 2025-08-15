@@ -27,6 +27,23 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // Cek status_user
+        if ($user->status_user === 'blocked') {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Akun Anda telah diblokir.',
+            ]);
+        }
+
+        if ($user->status_user === 'unverified') {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Akun Anda belum diverifikasi.',
+            ]);
+        }
+
         $request->session()->regenerate();
 
         return redirect()->intended(RouteServiceProvider::HOME);

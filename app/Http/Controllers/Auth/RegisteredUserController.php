@@ -40,12 +40,11 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'status_user' => 'unverified',
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
-
-        return redirect(RouteServiceProvider::HOME);
+        return redirect()->route('verification.notice')->with('status', 'Link verifikasi telah dikirim ke email Anda.');
     }
 }

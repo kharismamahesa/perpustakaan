@@ -68,6 +68,15 @@
                                     </div>
                                 </form>
                             </div>
+
+                            @if ($errors->any())
+                                <div class="mb-4 text-sm text-red-600">
+                                    @foreach ($errors->all() as $error)
+                                        <div>{{ $error }}</div>
+                                    @endforeach
+                                </div>
+                            @endif
+
                         </div>
                         <div class="mt-5 text-muted text-center">
                             Tidak memiliki akun? <a href="{{ route('register') }}">Buat akun</a>

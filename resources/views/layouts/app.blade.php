@@ -1,39 +1,57 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
+    <title>@yield('title', 'Perpus App')</title>
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/jqvmap/dist/jqvmap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/weather-icon/css/weather-icons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/weather-icon/css/weather-icons-wind.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/summernote/summernote-bs4.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/components.css') }}">
+    @stack('styles')
 </head>
 
-<body class="font-sans antialiased">
-    <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-        @include('layouts.navigation')
+<body>
+    <div id="app">
+        <div class="main-wrapper main-wrapper-1">
+            @include('layouts.navbar')
+            @include('layouts.sidebar')
 
-        <!-- Page Heading -->
-        @if (isset($header))
-            <header class="bg-white dark:bg-gray-800 shadow">
-                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                    {{ $header }}
+            <div class="main-content">
+                <section class="section">
+                    <div class="section-header">
+                        <h1>@yield('title')</h1>
+                    </div>
+                    <div class="section-body">
+                        @yield('content')
+                    </div>
+                </section>
+            </div>
+
+            <footer class="main-footer">
+                <div class="footer-left">
+                    &copy; 2018 <div class="bullet"></div> Design by
+                    <a href="https://nauval.in/">Muhamad Nauval Azhar</a>
                 </div>
-            </header>
-        @endif
-
-        <!-- Page Content -->
-        <main>
-            {{ $slot }}
-        </main>
+                <div class="footer-right"></div>
+            </footer>
+        </div>
     </div>
 </body>
+<script src="{{ asset('assets/modules/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/modules/popper.js') }}"></script>
+<script src="{{ asset('assets/modules/bootstrap/js/bootstrap.min.js') }}"></script>
+<script src="{{ asset('assets/modules/nicescroll/jquery.nicescroll.min.js') }}"></script>
+<script src="{{ asset('assets/modules/moment.min.js') }}"></script>
+@stack('scripts')
+<script src="{{ asset('assets/js/scripts.js') }}"></script>
+<script src="{{ asset('assets/js/custom.js') }}"></script>
 
 </html>
