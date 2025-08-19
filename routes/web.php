@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\BookCategoryController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +34,8 @@ Route::middleware(['auth', 'is_admin', 'blocked'])->prefix('admin')->group(funct
     Route::get('users/data', [UserController::class, 'data'])->name('users.data');
     Route::resource('users', UserController::class);
     Route::post('users/update-password', [UserController::class, 'changePassword'])->name('admin.users.update-password');
+    Route::get('book-categories/data', [BookCategoryController::class, 'data'])->name('book-categories.data');
+    Route::resource('book-categories', BookCategoryController::class);
 });
 
 

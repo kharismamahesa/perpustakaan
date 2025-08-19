@@ -23,6 +23,7 @@
                             <li><a class="nav-link" href="{{ route('users.index') }}">User</a></li>
                         @endif
                     @endauth
+                    <li><a class="nav-link" href="{{ route('book-categories.index') }}">Kategori Buku</a></li>
                     <li><a class="nav-link" href="#">Buku</a></li>
                 </ul>
             </li>
