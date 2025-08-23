@@ -13,9 +13,6 @@
     <div class="card">
         <div class="card-header">
             <h4>List Data</h4>
-            {{-- <div class="card-header-action">
-                <button id="btn-tambah-user" class="btn btn-success"><i class="fa fa-plus"></i> Tambah User</button>
-            </div> --}}
         </div>
         <div class="card-body">
             <div class="table-responsive">

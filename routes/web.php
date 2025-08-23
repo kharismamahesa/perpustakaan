@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\Admin\BookCategoryController;
+use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\ProfileController;
+use App\Models\BookCategory;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,13 +33,16 @@ Route::middleware(['auth', 'blocked'])->group(function () {
 });
 
 Route::middleware(['auth', 'is_admin', 'blocked'])->prefix('admin')->group(function () {
+    Route::post('users/update-password', [UserController::class, 'changePassword'])->name('admin.users.update-password');
+
     Route::get('users/data', [UserController::class, 'data'])->name('users.data');
     Route::resource('users', UserController::class);
-    Route::post('users/update-password', [UserController::class, 'changePassword'])->name('admin.users.update-password');
+
     Route::get('book-categories/data', [BookCategoryController::class, 'data'])->name('book-categories.data');
     Route::resource('book-categories', BookCategoryController::class);
+
+    Route::get('books/data', [BookController::class, 'data'])->name('books.data');
+    Route::resource('books', BookController::class);
 });
-
-
 
 require __DIR__ . '/auth.php';

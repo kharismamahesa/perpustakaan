@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BookCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
 class BookCategoryController extends Controller
@@ -23,14 +24,9 @@ class BookCategoryController extends Controller
                 ->addIndexColumn()
                 ->addColumn('aksi', function ($row) {
                     return '
-                        <button class="btn btn-sm btn-primary btn-edit" 
-                            data-id="' . $row->id . '" 
-                            data-name="' . e($row->name) . '" 
-                            data-email="' . e($row->description) . '">
-                            <i class="fas fa-edit"></i> Edit
-                        </button>
-                        <button class="btn btn-sm btn-danger btn-delete" data-id="' . $row->id . '"><i class="fas fa-trash"></i> Hapus</button>
-                    ';
+                    <button class="btn btn-sm btn-primary" onclick="editData(' . $row->id . ')"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteData(' . $row->id . ')"><i class="fas fa-trash"></i> Hapus</button>
+                ';
                 })
                 ->rawColumns(['aksi'])
                 ->make(true);
@@ -39,36 +35,99 @@ class BookCategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+        ], [
+            'name.required' => 'Nama kategori wajib diisi.',
         ]);
 
-        BookCategory::create($request->all());
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
 
-        return response()->json(['success' => true]);
+        try {
+            BookCategory::create($request->only('name', 'description'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil disimpan.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data.'
+            ]);
+        }
     }
 
     public function edit($id)
     {
-        $data = BookCategory::findOrFail($id);
-        return response()->json($data);
+        try {
+            $data = BookCategory::findOrFail($id);
+            return response()->json($data);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Data tidak ditemukan.'
+            ]);
+        }
     }
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => 'required|string|max:255'
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:500'
+        ], [
+            'name.required' => 'Nama kategori wajib diisi.',
+            'description.required' => 'Deskripsi kategori wajib diisi.'
         ]);
 
-        $data = BookCategory::findOrFail($id);
-        $data->update($request->all());
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
 
-        return response()->json(['success' => true]);
+        try {
+            $data = BookCategory::findOrFail($id);
+            $data->update($request->only('name', 'description'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diubah.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengubah data.'
+            ]);
+        }
     }
 
     public function destroy($id)
     {
-        BookCategory::findOrFail($id)->delete();
-        return response()->json(['success' => true]);
+        try {
+            BookCategory::findOrFail($id)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data.'
+            ]);
+        }
+    }
+
+    public function getCategories()
+    {
+        $categories = BookCategory::select('id', 'name')->orderBy('name')->get();
+        return response()->json($categories);
     }
 }
