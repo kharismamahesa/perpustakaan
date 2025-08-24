@@ -73,10 +73,13 @@
                         </div>
                         <div class="form-group col-md-4">
                             <label for="preview_cover">Preview Cover</label>
-                            <br>
-                            <img id="preview_cover" src="#" alt="Preview" class="img-thumbnail bordered"
-                                style="max-height: 200px; display: none;" />
+                            <div class="border rounded p-2 text-center"
+                                style="min-height: 220px; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa;">
+                                <img id="preview_cover" src="#" alt="Preview"
+                                    style="max-height: 200px; display: none; border-radius: 6px;" class="img-fluid" />
+                            </div>
                         </div>
+
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-5">
@@ -142,16 +145,17 @@
             $('#year').val('');
             $('#isbn').val('');
             $('#cover_image').val('');
+            $('#preview_cover').attr('src', '#').hide();
             $('#qty').val('');
             $('#category').val('').trigger('change');
         }
 
         function editData(id) {
+            clear_form();
             $.ajax({
                 url: `/admin/books/${id}/edit`,
                 method: 'GET',
                 success: function(response) {
-                    // console.log(response);
                     $('#id').val(response.id);
                     $('#title').val(response.title);
                     $('#description').val(response.description);
@@ -178,41 +182,41 @@
             });
         }
 
-        // function deleteData(id) {
-        //     swal({
-        //         title: "Hapus Data?",
-        //         text: "Data yang sudah dihapus tidak dapat dikembalikan!",
-        //         icon: "warning",
-        //         buttons: true,
-        //         dangerMode: true
-        //     }).then((willDelete) => {
-        //         if (willDelete) {
-        //             $.ajax({
-        //                 url: `/admin/book-categories/${id}`,
-        //                 method: 'POST',
-        //                 data: {
-        //                     _token: '{{ csrf_token() }}',
-        //                     _method: 'DELETE'
-        //                 },
-        //                 success: function(response) {
-        //                     if (response.success == true) {
-        //                         table.ajax.reload(null, false);
-        //                         iziToast.success({
-        //                             title: 'Berhasil!',
-        //                             message: 'Data berhasil dihapus.',
-        //                             position: 'topCenter'
-        //                         });
-        //                     } else {
-        //                         swal('Gagal', response.message, 'error');
-        //                     }
-        //                 },
-        //                 error: function(xhr) {
-        //                     swal('Gagal', 'Gagal menghapus user.', 'error');
-        //                 }
-        //             });
-        //         }
-        //     });
-        // }
+        function deleteData(id) {
+            swal({
+                title: "Hapus Data?",
+                text: "Data yang sudah dihapus tidak dapat dikembalikan!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true
+            }).then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        url: `/admin/books/${id}`,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'DELETE'
+                        },
+                        success: function(response) {
+                            if (response.success == true) {
+                                table.ajax.reload(null, false);
+                                iziToast.success({
+                                    title: 'Berhasil!',
+                                    message: 'Data berhasil dihapus.',
+                                    position: 'topCenter'
+                                });
+                            } else {
+                                swal('Gagal', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            swal('Gagal', 'Gagal menghapus user.', 'error');
+                        }
+                    });
+                }
+            });
+        }
 
         $(document).ready(function() {
             $('#cover_image').on('change', function(event) {
@@ -272,7 +276,8 @@
                         data: 'cover_image',
                         name: 'cover_image',
                         orderable: false,
-                        searchable: false
+                        searchable: false,
+                        className: 'text-center'
                     },
                     {
                         data: 'quantity',
@@ -309,9 +314,8 @@
                 const cover_image = $('#cover_image').val();
                 const qty = $('#qty').val();
                 const category = $('#category').val();
-                console.log(title, description, author, publisher, year, isbn, cover_image, qty, category);
 
-                if (!title || !description || !author || !publisher || !year || !isbn || !cover_image || !
+                if (!title || !description || !author || !publisher || !year || !cover_image || !
                     qty || !category) {
                     iziToast.warning({
                         title: 'Peringatan!',
@@ -364,51 +368,95 @@
                             }
                         },
                         error: function(xhr) {
-                            swal('Gagal', 'Terjadi kesalahan saat menyimpan data.', 'error');
+                            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                let messages = Object.values(xhr.responseJSON.errors).flat()
+                                    .join('<br>');
+                                swal('Gagal', messages, 'error');
+                            } else {
+                                swal('Gagal', 'Terjadi kesalahan saat menyimpan data.',
+                                    'error');
+                            }
                         }
                     });
                 }
             });
 
-            // $('#btn-update').on('click', function() {
-            //     const id = $('#id').val();
-            //     const name = $('#name').val();
-            //     const description = $('#description').val();
+            $('#btn-update').on('click', function() {
+                const id = $('#id').val();
+                const title = $('#title').val();
+                const description = $('#description').val();
+                const author = $('#author').val();
+                const publisher = $('#publisher').val();
+                const year = $('#year').val();
+                const isbn = $('#isbn').val();
+                const qty = $('#qty').val();
+                const category = $('#category').val();
 
-            //     if (!name || !description) {
-            //         iziToast.warning({
-            //             title: 'Peringatan!',
-            //             message: 'Semua field harus diisi.',
-            //             position: 'topCenter'
-            //         });
-            //     } else {
-            //         $.ajax({
-            //             url: `/admin/book-categories/${id}`,
-            //             method: 'PUT',
-            //             data: {
-            //                 _token: '{{ csrf_token() }}',
-            //                 name: name,
-            //                 description: description,
-            //             },
-            //             success: function(response) {
-            //                 if (response.success == true) {
-            //                     $('#formModal').modal('hide');
-            //                     table.ajax.reload(null, false);
-            //                     iziToast.success({
-            //                         title: 'Berhasil!',
-            //                         message: 'Data berhasil diperbarui.',
-            //                         position: 'topCenter'
-            //                     });
-            //                 } else {
-            //                     swal('Gagal', response.message, 'error');
-            //                 }
-            //             },
-            //             error: function(xhr) {
-            //                 swal('Gagal', 'Gagal memperbarui data.', 'error');
-            //             }
-            //         });
-            //     }
-            // });
+                if (!title || !description || !author || !publisher || !year || !qty || !category) {
+                    iziToast.warning({
+                        title: 'Peringatan!',
+                        message: 'Field bertanda * wajib diisi.',
+                        position: 'topCenter'
+                    });
+                    return;
+                }
+
+                let formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('_method', 'PUT'); // Laravel butuh ini untuk update
+                formData.append('title', title);
+                formData.append('description', description);
+                formData.append('author', author);
+                formData.append('publisher', publisher);
+                formData.append('year', year);
+                formData.append('isbn', isbn);
+                formData.append('quantity', qty);
+                formData.append('category', category);
+
+                let fileInput = $('#cover_image')[0].files[0];
+                if (fileInput) {
+                    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                    if (!allowedTypes.includes(fileInput.type)) {
+                        iziToast.error({
+                            title: 'Gagal!',
+                            message: 'Format gambar harus PNG, JPG, atau JPEG',
+                            position: 'topCenter'
+                        });
+                        return;
+                    }
+                    formData.append('cover_image', fileInput);
+                }
+
+                $.ajax({
+                    url: `/admin/books/${id}`,
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            $('#formModal').modal('hide');
+                            table.ajax.reload(null, false);
+                            iziToast.success({
+                                title: 'Berhasil!',
+                                message: 'Data berhasil diperbarui.',
+                                position: 'topCenter'
+                            });
+                        } else {
+                            swal('Gagal', response.message, 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.responseJSON && xhr.responseJSON.errors) {
+                            let messages = Object.values(xhr.responseJSON.errors).flat().join(
+                                '<br>');
+                            swal('Gagal', messages, 'error');
+                        } else {
+                            swal('Gagal', 'Terjadi kesalahan saat memperbarui data.', 'error');
+                        }
+                    }
+                });
+            });
         });
     </script>
 @endpush

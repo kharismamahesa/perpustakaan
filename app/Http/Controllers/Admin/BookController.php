@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\BookCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
 class BookController extends Controller
@@ -42,7 +44,7 @@ class BookController extends Controller
                 })
                 ->addColumn('cover_image', function ($row) {
                     if ($row->cover_image) {
-                        return '<img src="' . asset('storage/' . $row->cover_image) . '" height="300" class="img-thumbnail">';
+                        return '<img src="' . asset('storage/' . $row->cover_image) . '" height="100" >';
                     }
                     return '-';
                 })
@@ -72,16 +74,34 @@ class BookController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validator = Validator::make($request->all(), [
             'title' => 'required',
             'description' => 'required',
             'author' => 'required',
             'publisher' => 'required',
             'year' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
-            'isbn' => 'required|unique:books,isbn',
+            'isbn' => 'nullable|string|unique:books,isbn',
             'quantity' => 'required|numeric',
             'category' => 'required|exists:book_categories,id',
             'cover_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'title.required' => 'Judul wajib diisi.',
+            'description.required' => 'Deskripsi wajib diisi.',
+            'author.required' => 'Pengarang wajib diisi.',
+            'publisher.required' => 'Penerbit wajib diisi.',
+            'year.required' => 'Tahun terbit wajib diisi.',
+            'year.digits' => 'Tahun terbit harus berupa 4 digit angka.',
+            'year.integer' => 'Tahun terbit harus berupa angka.',
+            'year.min' => 'Tahun terbit minimal adalah 1900.',
+            'year.max' => 'Tahun terbit tidak boleh lebih dari tahun sekarang.',
+            'isbn.unique' => 'ISBN sudah terdaftar.',
+            'quantity.required' => 'Jumlah buku wajib diisi.',
+            'quantity.numeric' => 'Jumlah buku harus berupa angka.',
+            'category.required' => 'Kategori wajib dipilih.',
+            'category.exists' => 'Kategori tidak valid.',
+            'cover_image.image' => 'File harus berupa gambar.',
+            'cover_image.mimes' => 'Format gambar harus jpg, jpeg, atau png.',
+            'cover_image.max' => 'Ukuran gambar maksimal 2MB.',
         ]);
 
         $coverPath = null;
@@ -89,19 +109,38 @@ class BookController extends Controller
             $coverPath = $request->file('cover_image')->store('covers', 'public');
         }
 
-        Book::create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'author' => $validated['author'],
-            'publisher' => $validated['publisher'],
-            'year' => $validated['year'],
-            'isbn' => $validated['isbn'],
-            'cover_image' => $coverPath,
-            'quantity' => $validated['quantity'],
-            'category_id' => $validated['category'],
-        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
 
-        return response()->json(['success' => true]);
+        $validated = $validator->validated();
+
+        try {
+            Book::create([
+                'title' => $validated['title'],
+                'description' => $validated['description'],
+                'author' => $validated['author'],
+                'publisher' => $validated['publisher'],
+                'year' => $validated['year'],
+                'isbn' => $validated['isbn'] ?? null,
+                'cover_image' => $coverPath,
+                'quantity' => $validated['quantity'],
+                'category_id' => $validated['category'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil disimpan.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data.'
+            ]);
+        }
     }
 
     /**
@@ -131,9 +170,80 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
-        //
+        $book = Book::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'description' => 'required',
+            'author' => 'required',
+            'publisher' => 'required',
+            'year' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
+            'isbn' => 'nullable|string|unique:books,isbn,' . $book->id . ',id',
+            'quantity' => 'required|numeric',
+            'category' => 'required|exists:book_categories,id',
+            'cover_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ], [
+            'title.required' => 'Judul wajib diisi.',
+            'description.required' => 'Deskripsi wajib diisi.',
+            'author.required' => 'Pengarang wajib diisi.',
+            'publisher.required' => 'Penerbit wajib diisi.',
+            'year.required' => 'Tahun terbit wajib diisi.',
+            'year.digits' => 'Tahun terbit harus berupa 4 digit angka.',
+            'year.integer' => 'Tahun terbit harus berupa angka.',
+            'year.min' => 'Tahun terbit minimal adalah 1900.',
+            'year.max' => 'Tahun terbit tidak boleh lebih dari tahun sekarang.',
+            'isbn.unique' => 'ISBN sudah terdaftar.',
+            'quantity.required' => 'Jumlah buku wajib diisi.',
+            'quantity.numeric' => 'Jumlah buku harus berupa angka.',
+            'category.required' => 'Kategori wajib dipilih.',
+            'category.exists' => 'Kategori tidak valid.',
+            'cover_image.image' => 'File harus berupa gambar.',
+            'cover_image.mimes' => 'Format gambar harus jpg, jpeg, atau png.',
+            'cover_image.max' => 'Ukuran gambar maksimal 2MB.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        $validated = $validator->validated();
+
+        $coverPath = $book->cover_image;
+        if ($request->hasFile('cover_image')) {
+            if ($book->cover_image && Storage::disk('public')->exists($book->cover_image)) {
+                Storage::disk('public')->delete($book->cover_image);
+            }
+            $coverPath = $request->file('cover_image')->store('covers', 'public');
+        }
+
+        try {
+            $book->update([
+                'title'       => $validated['title'],
+                'description' => $validated['description'],
+                'author'      => $validated['author'],
+                'publisher'   => $validated['publisher'],
+                'year'        => $validated['year'],
+                'isbn'        => $validated['isbn'] ?? null,
+                'cover_image' => $coverPath,
+                'quantity'    => $validated['quantity'],
+                'category_id' => $validated['category'],
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil diperbarui.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -141,6 +251,17 @@ class BookController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        try {
+            Book::findOrFail($id)->delete();
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menghapus data.'
+            ]);
+        }
     }
 }

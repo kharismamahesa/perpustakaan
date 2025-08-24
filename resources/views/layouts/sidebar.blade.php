@@ -13,19 +13,32 @@
                     <i class="fas fa-fire"></i> <span>Dashboard</span>
                 </a>
             </li>
-            <li class="dropdown">
-                <a href="#" class="nav-link has-dropdown">
-                    <i class="fas fa-th-large"></i> <span>Data Master</span>
+            <li class="menu-header">Data Master</li>
+            <li>
+                <a class="nav-link" href="{{ route('users.index') }}">
+                    <i class="fas fa-users"></i> <span>User</span>
                 </a>
-                <ul class="dropdown-menu">
-                    @auth
-                        @if (auth()->user()->role === 'admin')
-                            <li><a class="nav-link" href="{{ route('users.index') }}">User</a></li>
-                        @endif
-                    @endauth
-                    <li><a class="nav-link" href="{{ route('book-categories.index') }}">Kategori Buku</a></li>
-                    <li><a class="nav-link" href="{{ route('books.index') }}">Buku</a></li>
-                </ul>
+            </li>
+            <li>
+                <a class="nav-link" href="{{ route('book-categories.index') }}">
+                    <i class="fas fa-th-large"></i> <span>Kategori Buku</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="{{ route('books.index') }}">
+                    <i class="fas fa-book"></i> <span>Buku</span>
+                </a>
+            </li>
+            <li class="menu-header">Transaksi</li>
+            <li>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-thumbs-up"></i> <span>Peminjaman</span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="#">
+                    <i class="fas fa-thumbs-down"></i> <span>Pengembalian</span>
+                </a>
             </li>
         </ul>
     </aside>
