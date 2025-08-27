@@ -60,7 +60,6 @@
                             <option value="">-Pilih Role-</option>
                             <option value="admin">Admin</option>
                             <option value="petugas">Petugas</option>
-                            <option value="member">Member</option>
                         </select>
                     </div>
                     <div class="form-group">

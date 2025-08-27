@@ -3,6 +3,7 @@
 @section('title', 'Buku')
 
 @push('styles')
+    <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap-daterangepicker/daterangepicker.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/modules/datatables/datatables.min.css') }}">
     <link rel="stylesheet"
         href="{{ asset('assets/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css') }}">

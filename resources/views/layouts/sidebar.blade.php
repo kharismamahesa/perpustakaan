@@ -31,7 +31,7 @@
             </li>
             <li class="menu-header">Transaksi</li>
             <li>
-                <a class="nav-link" href="#">
+                <a class="nav-link" href="{{ route('loans.index') }}">
                     <i class="fas fa-thumbs-up"></i> <span>Peminjaman</span>
                 </a>
             </li>
