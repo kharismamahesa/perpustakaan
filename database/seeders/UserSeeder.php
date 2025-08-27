@@ -19,12 +19,14 @@ class UserSeeder extends Seeder
                 'name' => 'Admin Perpus',
                 'email' => 'admin@perpus.com',
                 'password' => Hash::make('admin123'),
+                'status_user' => 'verified',
                 'role' => 'admin',
             ],
             [
                 'name' => 'Petugas Perpus',
                 'email' => 'petugas@perpus.com',
                 'password' => Hash::make('petugas123'),
+                'status_user' => 'verified',
                 'role' => 'petugas',
             ]
         ]);
