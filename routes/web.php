@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\BookCategoryController;
 use App\Http\Controllers\Admin\BookController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\MemberController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ProfileController;
 use App\Models\BookCategory;
@@ -40,6 +41,9 @@ Route::middleware(['auth', 'is_admin', 'blocked'])->prefix('admin')->group(funct
 
     Route::get('users/data', [UserController::class, 'data'])->name('users.data');
     Route::resource('users', UserController::class);
+
+    Route::get('members/data', [MemberController::class, 'data'])->name('members.data');
+    Route::resource('members', MemberController::class);
 
     Route::get('book-categories/data', [BookCategoryController::class, 'data'])->name('book-categories.data');
     Route::resource('book-categories', BookCategoryController::class);

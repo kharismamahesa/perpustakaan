@@ -20,7 +20,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped" id="book-table">
+                <table class="table table-striped" id="books-table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -239,7 +239,7 @@
             });
 
 
-            table = $('#book-table').DataTable({
+            table = $('#books-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('books.data') }}",

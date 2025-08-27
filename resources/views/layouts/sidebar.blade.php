@@ -20,6 +20,11 @@
                 </a>
             </li>
             <li>
+                <a class="nav-link" href="{{ route('members.index') }}">
+                    <i class="fas fa-users"></i> <span>Member</span>
+                </a>
+            </li>
+            <li>
                 <a class="nav-link" href="{{ route('book-categories.index') }}">
                     <i class="fas fa-th-large"></i> <span>Kategori Buku</span>
                 </a>
