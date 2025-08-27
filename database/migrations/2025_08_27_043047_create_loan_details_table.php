@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('loan_id')->constrained('loans')->onDelete('cascade');
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
-            $table->integer('quantity')->default(1); // jumlah buku yang dipinjam
+            $table->integer('quantity')->default(1);
             $table->timestamps();
         });
     }

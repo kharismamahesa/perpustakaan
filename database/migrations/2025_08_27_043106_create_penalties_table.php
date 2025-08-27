@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('penalties', function (Blueprint $table) {
             $table->id();
             $table->enum('type', ['per_day', 'per_3_days', 'per_week', 'per_month', 'flat']);
-            $table->decimal('amount', 10, 2); // jumlah denda
-            $table->boolean('is_active')->default(true); // konfigurasi aktif atau tidak
+            $table->decimal('amount', 10, 2);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
