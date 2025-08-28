@@ -7,6 +7,7 @@
     <link rel="stylesheet"
         href="{{ asset('assets/modules/datatables/DataTables-1.10.16/css/dataTables.bootstrap4.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/modules/izitoast/css/iziToast.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/modules/bootstrap-daterangepicker/daterangepicker.css') }}">
 @endpush
 
 @section('content')
@@ -73,11 +74,26 @@
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="registered_date">Tanggal Registrasi</label>
-                            <input type="date" class="form-control" id="registered_date" name="registered_date">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" id="registered_date" name="registered_date"
+                                    readonly>
+                            </div>
                         </div>
                         <div class="form-group col-md-6">
                             <label for="expired_date">Tanggal Expired</label>
-                            <input type="date" class="form-control" id="expired_date" name="expired_date">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <div class="input-group-text">
+                                        <i class="fas fa-calendar"></i>
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control" id="expired_date" name="expired_date" disabled>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -95,6 +111,7 @@
     <script src="{{ asset('assets/modules/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js') }}"></script>
     <script src="{{ asset('assets/modules/sweetalert/sweetalert.min.js') }}"></script>
     <script src="{{ asset('assets/modules/izitoast/js/iziToast.min.js') }}"></script>
+    <script src="{{ asset('assets/modules/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script>
         let table;
 
@@ -109,6 +126,19 @@
         }
 
         $(function() {
+            $('#registered_date').daterangepicker({
+                locale: {
+                    format: 'YYYY-MM-DD'
+                },
+                singleDatePicker: true,
+            });
+            $('#expired_date').daterangepicker({
+                locale: {
+                    format: 'YYYY-MM-DD'
+                },
+                singleDatePicker: true,
+            });
+
             const table = $('#members-table').DataTable({
                 processing: true,
                 serverSide: true,
