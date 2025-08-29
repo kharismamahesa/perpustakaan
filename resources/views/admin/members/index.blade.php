@@ -131,6 +131,10 @@
                     format: 'YYYY-MM-DD'
                 },
                 singleDatePicker: true,
+            }, function(start) {
+                let registered = start.clone();
+                let expired = registered.add(6, 'months').format('YYYY-MM-DD');
+                $('#expired_date').val(expired);
             });
             $('#expired_date').daterangepicker({
                 locale: {
@@ -194,6 +198,52 @@
                 $('#btn-save').show();
                 $('#btn-update').hide();
                 $('#formModal').modal('show');
+            });
+
+            $('#btn-save').on('click', function() {
+                const name = $('#name').val();
+                const address = $('#address').val();
+                const phone = $('#phone').val();
+                const email = $('#email').val();
+                const registered_date = $('#registered_date').val();
+                const expired_date = $('#expired_date').val();
+                if (!name || !address || !email || !phone || !registered_date || !expired_date) {
+                    iziToast.warning({
+                        title: 'Peringatan!',
+                        message: 'Semua field harus diisi.',
+                        position: 'topCenter'
+                    });
+                } else {
+                    $.ajax({
+                        url: '/admin/members',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            name: name,
+                            address: address,
+                            phone: phone,
+                            email: email,
+                            registered_date: registered_date,
+                            expired_date: expired_date,
+                        },
+                        success: function(response) {
+                            if (response.success == true) {
+                                $('#formModal').modal('hide');
+                                table.ajax.reload(null, false);
+                                iziToast.success({
+                                    title: 'Berhasil!',
+                                    message: 'Data berhasil disimpan.',
+                                    position: 'topCenter'
+                                });
+                            } else {
+                                swal('Gagal', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            swal('Gagal', 'Gagal menyimpan data.', 'error');
+                        }
+                    });
+                }
             });
         });
     </script>

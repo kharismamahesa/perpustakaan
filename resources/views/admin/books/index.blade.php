@@ -20,7 +20,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-striped" id="books-table">
+                <table class="table table-striped" id="book-table">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -239,7 +239,7 @@
             });
 
 
-            table = $('#books-table').DataTable({
+            table = $('#book-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('books.data') }}",
@@ -404,7 +404,7 @@
 
                 let formData = new FormData();
                 formData.append('_token', '{{ csrf_token() }}');
-                formData.append('_method', 'PUT'); // Laravel butuh ini untuk update
+                formData.append('_method', 'PUT');
                 formData.append('title', title);
                 formData.append('description', description);
                 formData.append('author', author);

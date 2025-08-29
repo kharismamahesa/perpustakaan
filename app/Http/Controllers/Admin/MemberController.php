@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Member;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
 class MemberController extends Controller
@@ -30,7 +31,60 @@ class MemberController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'phone' => 'required|string|max:15',
+            'email' => 'required|email|max:255',
+            'registered_date' => 'required|date',
+            'expired_date' => 'nullable|date|after:registered_date',
+        ], [
+            'name.required' => 'Nama wajib diisi.',
+            'address.required' => 'Alamat wajib diisi.',
+            'phone.required' => 'No HP wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'registered_date.required' => 'Tanggal Registrasi wajib diisi.',
+            'expired_date.after' => 'Tanggal Expired harus setelah Tanggal Registrasi.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ]);
+        }
+
+        $validated = $validator->validated();
+
+        try {
+            $lastMember = Member::orderBy('member_code', 'desc')->first();
+            if ($lastMember && $lastMember->member_code) {
+                $lastNumber = (int)substr($lastMember->member_code, 1);
+                $newNumber = $lastNumber + 1;
+            } else {
+                $newNumber = 1;
+            }
+            $member_code = 'M' . str_pad($newNumber, 10, '0', STR_PAD_LEFT);
+
+            Member::create([
+                'member_code' => $member_code,
+                'name' => $validated['name'],
+                'address' => $validated['address'],
+                'phone' => $validated['phone'],
+                'email' => $validated['email'],
+                'registered_date' => $validated['registered_date'],
+                'expired_date' => $validated['expired_date'],
+            ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Data berhasil disimpan.'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat menyimpan data.'
+            ]);
+        }
     }
 
     /**

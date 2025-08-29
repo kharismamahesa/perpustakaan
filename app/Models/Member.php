@@ -15,7 +15,7 @@ class Member extends Model
         'address',
         'phone',
         'email',
-        'registrated_date',
-        'expirated_date',
+        'registered_date',
+        'expired_date',
     ];
 }
