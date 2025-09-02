@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Models\Book;
+use App\Models\Member;
 use Illuminate\Http\Request;
 
 class LoanController extends Controller
@@ -10,11 +11,35 @@ class LoanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
-        return view('loan', compact('users'));
+        $members = Member::all();
+
+        $query = Book::select('books.*', 'book_categories.name as category_name')
+            ->leftJoin('book_categories', 'books.category_id', '=', 'book_categories.id');
+
+        if ($search = $request->get('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('author', 'like', "%{$search}%")
+                    ->orWhere('publisher', 'like', "%{$search}%")
+                    ->orWhere('year', 'like', "%{$search}%")
+                    ->orWhere('isbn', 'like', "%{$search}%")
+                    ->orWhere('book_categories.name', 'like', "%{$search}%");
+            });
+        }
+
+        $books = $query->orderBy('title')
+            ->paginate(10)
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return view('admin.books.partials.list', compact('books'))->render();
+        }
+
+        return view('loan', compact('members', 'books'));
     }
+
 
     /**
      * Show the form for creating a new resource.
