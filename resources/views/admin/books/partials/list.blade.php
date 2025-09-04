@@ -28,8 +28,14 @@
                     <td>{{ $book->isbn }}</td>
                     <td>{{ $book->category_name }}</td>
                     <td>{{ $book->quantity }}</td>
-                    <td><button onclick="tambahbuku({{ $book->id }})" class="btn btn-sm btn-primary"><i
-                                class="fas fa-plus"></i></button></td>
+                    <td>
+                        <button type="button" class="btn btn-sm btn-success add-book" data-id="{{ $book->id }}"
+                            data-title="{{ $book->title }}" data-author="{{ $book->author }}"
+                            data-year="{{ $book->year }}" data-category="{{ $book->category->name ?? '-' }}"
+                            data-image="{{ $book->cover_image ? asset('storage/' . $book->cover_image) : asset('images/no-cover.png') }}">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </td>
                 </tr>
             @empty
                 <tr>
