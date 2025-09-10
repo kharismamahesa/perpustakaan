@@ -52,6 +52,11 @@
                 </div>
                 <div class="modal-body">
                     <input type="hidden" id="id" name="id">
+                    <div class="form-group" id="member_code_group">
+                        <label for="name">Kode Member</label>
+                        <input type="text" class="form-control" id="member_code" name="member_code"
+                            placeholder="Kode Member" disabled>
+                    </div>
                     <div class="form-group">
                         <label for="name">Nama</label>
                         <input type="text" class="form-control" id="name" name="name" placeholder="Nama Member">
@@ -117,6 +122,7 @@
 
         function clear_form() {
             $('#id').val('');
+            $('#member_code').val('');
             $('#name').val('');
             $('#address').val('');
             $('#phone').val('');
@@ -125,7 +131,65 @@
             $('#expired_date').val('');
         }
 
-        $(function() {
+        function deleteData(id) {
+            swal({
+                title: "Hapus Data?",
+                text: "Data yang sudah dihapus tidak dapat dikembalikan!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true
+            }).then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        url: `/admin/members/${id}`,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'DELETE'
+                        },
+                        success: function(response) {
+                            if (response.success == true) {
+                                table.ajax.reload(null, false);
+                                iziToast.success({
+                                    title: 'Berhasil!',
+                                    message: 'Data berhasil dihapus.',
+                                    position: 'topCenter'
+                                });
+                            } else {
+                                swal('Gagal', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            swal('Gagal', 'Gagal menghapus user.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function editData(id) {
+            $.ajax({
+                url: `/admin/members/${id}/edit`,
+                method: 'GET',
+                success: function(response) {
+                    $('#member_code_group').show();
+                    $('#id').val(response.id);
+                    $('#member_code').val(response.member_code);
+                    $('#name').val(response.name);
+                    $('#address').val(response.address);
+                    $('#phone').val(response.phone);
+                    $('#email').val(response.email);
+                    $('#registered_date').val(response.registered_date);
+                    $('#expired_date').val(response.expired_date);
+                    $('.modal-title').html("<i class='fas fa-edit'></i> Ubah Data");
+                    $('#btn-save').hide();
+                    $('#btn-update').show();
+                    $('#formModal').modal('show');
+                }
+            });
+        }
+
+        $(document).ready(function() {
             $('#registered_date').daterangepicker({
                 locale: {
                     format: 'YYYY-MM-DD'
@@ -143,7 +207,7 @@
                 singleDatePicker: true,
             });
 
-            const table = $('#members-table').DataTable({
+            table = $('#members-table').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('members.data') }}",
@@ -194,6 +258,7 @@
 
             $('#btn-add-data').on('click', function() {
                 clear_form();
+                $('#member_code_group').hide();
                 $('.modal-title').html("<i class='fas fa-plus'></i> Tambah Data");
                 $('#btn-save').show();
                 $('#btn-update').hide();
@@ -241,6 +306,55 @@
                         },
                         error: function(xhr) {
                             swal('Gagal', 'Gagal menyimpan data.', 'error');
+                        }
+                    });
+                }
+            });
+
+            $('#btn-update').on('click', function() {
+                const id = $('#id').val();
+                const name = $('#name').val();
+                const address = $('#address').val();
+                const phone = $('#phone').val();
+                const email = $('#email').val();
+                const registered_date = $('#registered_date').val();
+                const expired_date = $('#expired_date').val();
+                if (!name || !address || !email || !phone || !registered_date || !expired_date) {
+                    iziToast.warning({
+                        title: 'Peringatan!',
+                        message: 'Semua field harus diisi.',
+                        position: 'topCenter'
+                    });
+                } else {
+                    $.ajax({
+                        url: `/admin/members/${id}`,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            _method: 'PUT',
+                            name: name,
+                            address: address,
+                            phone: phone,
+                            email: email,
+                            registered_date: registered_date,
+                            expired_date: expired_date,
+                        },
+                        success: function(response) {
+                            if (response.success == true) {
+                                $('#formModal').modal('hide');
+                                table.ajax.reload(null, false);
+                                iziToast.success({
+                                    title: 'Berhasil!',
+                                    message: 'Data berhasil diubah.',
+                                    position: 'topCenter'
+                                });
+                            } else {
+                                console.log('gagal');
+                                // swal('Gagal', response.message, 'error');
+                            }
+                        },
+                        error: function(xhr) {
+                            swal('Gagal', 'Gagal mengubah data.', 'error');
                         }
                     });
                 }
