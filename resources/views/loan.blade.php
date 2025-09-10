@@ -26,14 +26,14 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card">
+            <div class="card" id="form-loan">
                 <div class="card-header">
                     <h4>Form Peminjaman</h4>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
                         <label>Pilih Anggota</label>
-                        <select id="user_id" name="user_id" class="form-control select2" style="width: 100%">
+                        <select id="member_id" name="member_id" class="form-control select2" style="width: 100%">
                             <option value="">-- Pilih Anggota --</option>
                             @foreach ($members as $member)
                                 <option value="{{ $member->id }}">{{ $member->name }}</option>
@@ -44,6 +44,9 @@
                         <label>Tanggal Peminjaman</label>
                         <input type="text" id="loan_date" name="loan_date" class="form-control">
                     </div>
+
+                    <button id="submit-loan" class="btn btn-primary btn-lg btn-block"><i class="fas fa-paper-plane"></i>
+                        Proses Peminjaman</button>
                 </div>
             </div>
         </div>
@@ -73,6 +76,7 @@
     <script src="{{ asset('assets/modules/izitoast/js/iziToast.min.js') }}"></script>
     <script src="{{ asset('assets/modules/bootstrap-daterangepicker/daterangepicker.js') }}"></script>
     <script src="{{ asset('assets/modules/select2/dist/js/select2.full.min.js') }}"></script>
+    <script src="{{ asset('assets/js/stisla.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#loan_date').daterangepicker({
@@ -125,16 +129,20 @@
                 }
 
                 let card = `
-                    <div class="col-md-3 mb-3" id="book-card-${id}">
-                        <div class="card h-100 shadow-sm">
-                            <img src="${image}" class="card-img-top" alt="${title}" style="height: 100px; object-fit: cover;">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3" id="book-card-${id}">
+                        <div class="card h-100 shadow-sm position-relative">
+                            <img src="${image}" class="card-img-top" alt="${title}" style="height: 150px; object-fit: cover;">
+
+                            <button type="button" class="btn btn-danger remove-book position-absolute" 
+                                    data-id="${id}" 
+                                    style="top:5px; right:5px; border-radius:50%;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+
                             <div class="card-body d-flex flex-column">
                                 <input type="hidden" name="book_ids[]" value="${id}">
-                                <h6 class="card-title">${title}</h6>
-                                <p class="card-text text-muted">${year} - ${author}</p>
-                                <button type="button" class="btn btn-danger btn-sm remove-book" data-id="${id}">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
+                                <h6 class="card-title text-truncate">${title}</h6>
+                                <p class="card-text text-muted text-truncate small mb-0">${year} - ${author}</p>
                             </div>
                         </div>
                     </div>
@@ -149,7 +157,76 @@
                 $("#book-card-" + id).remove();
             });
 
+            $('#submit-loan').on('click', function() {
+                let member_id = $('#member_id').val();
+                let loan_date = $('#loan_date').val();
+                let book_ids = [];
+                $("input[name='book_ids[]']").each(function() {
+                    book_ids.push($(this).val());
+                });
 
+                if (!member_id) {
+                    iziToast.error({
+                        title: 'Error!',
+                        message: 'Pilih anggota terlebih dahulu.',
+                        position: 'topCenter'
+                    });
+                    return;
+                } else if (!loan_date) {
+                    iziToast.error({
+                        title: 'Error!',
+                        message: 'Pilih tanggal peminjaman.',
+                        position: 'topCenter'
+                    });
+                    return;
+                } else if (book_ids.length === 0) {
+                    iziToast.error({
+                        title: 'Error!',
+                        message: 'Pilih minimal 1 buku untuk dipinjam.',
+                        position: 'topCenter'
+                    });
+                    return;
+                } else {
+                    $.ajax({
+                        url: "{{ route('loans.store') }}",
+                        method: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            member_id: member_id,
+                            loan_date: loan_date,
+                            book_ids: book_ids
+                        },
+                        beforeSend: function() {
+                            $('#submit-loan').attr('disabled', true).html(
+                                '<i class="fas fa-spinner fa-spin"></i> Processing...');
+                        },
+                        success: function(response) {
+                            iziToast.success({
+                                title: 'Success!',
+                                message: response.message,
+                                position: 'topCenter'
+                            });
+                            // reset form
+                            $('#member_id').val('').trigger('change');
+                            $('#loan_date').val('');
+                            $('#loan-books').empty();
+                            fetch_data(1, '');
+                        },
+                        error: function(xhr) {
+                            iziToast.error({
+                                title: 'Error!',
+                                message: xhr.responseJSON.message ||
+                                    'Terjadi kesalahan.',
+                                position: 'topCenter'
+                            });
+                        },
+                        complete: function() {
+                            $('#submit-loan').attr('disabled', false).html(
+                                '<i class="fas fa-paper-plane"></i> Proses Peminjaman');
+                        }
+                    });
+                }
+            });
         });
     </script>
 @endpush

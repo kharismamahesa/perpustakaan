@@ -3,8 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use App\Models\Loan;
+use App\Models\LoanDetail;
 use App\Models\Member;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LoanController extends Controller
 {
@@ -54,7 +58,60 @@ class LoanController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate(
+            [
+                'member_id' => 'required|exists:members,id',
+                'book_ids' => 'required|array|min:1',
+                'book_ids.*' => 'exists:books,id',
+            ],
+            [
+                'member_id.required' => 'Pilih anggota terlebih dahulu.',
+                'member_id.exists' => 'Anggota tidak ditemukan.',
+                'book_ids.required' => 'Pilih minimal satu buku.',
+                'book_ids.array' => 'Data buku tidak valid.',
+                'book_ids.min' => 'Pilih minimal satu buku.',
+                'book_ids.*.exists' => 'Buku tidak ditemukan.',
+            ]
+        );
+
+        DB::beginTransaction();
+        try {
+            // set tanggal pinjam & jatuh tempo
+            $loanDate = Carbon::now();
+            $dueDate = Carbon::now()->addDays(7); // default 7 hari
+
+            // simpan master loan
+            $loan = Loan::create([
+                'user_id'    => $request->member_id,
+                'loan_date'  => $loanDate->toDateString(),
+                'due_date'   => $dueDate->toDateString(),
+                'fine_amount' => 0,
+                'status'     => 'borrowed',
+            ]);
+
+            // simpan detail buku
+            foreach ($request->book_ids as $bookId) {
+                LoanDetail::create([
+                    'loan_id'  => $loan->id,
+                    'book_id'  => $bookId,
+                    'quantity' => 1, // masih default 1
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Peminjaman berhasil disimpan.',
+                'loan_id' => $loan->id
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

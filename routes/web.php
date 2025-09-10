@@ -34,6 +34,7 @@ Route::middleware(['auth', 'blocked'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
+    Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
 });
 
 Route::middleware(['auth', 'is_admin', 'blocked'])->prefix('admin')->group(function () {
