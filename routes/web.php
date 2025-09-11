@@ -33,8 +33,13 @@ Route::middleware(['auth', 'blocked'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
-    Route::post('/loans', [LoanController::class, 'store'])->name('loans.store');
+    Route::prefix('loans')->name('loans.')->group(function () {
+        Route::get('/', [LoanController::class, 'index'])->name('index');
+        Route::get('/create', [LoanController::class, 'create'])->name('create');
+        Route::post('/', [LoanController::class, 'store'])->name('store');
+        Route::get('/data', [LoanController::class, 'data'])->name('data');
+        Route::get('/{id}', [LoanController::class, 'show'])->name('show');
+    });
 });
 
 Route::middleware(['auth', 'is_admin', 'blocked'])->prefix('admin')->group(function () {

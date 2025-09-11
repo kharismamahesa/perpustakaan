@@ -19,7 +19,7 @@
                 </div>
                 <div class="card-body">
                     <div id="loan-books" class="d-flex overflow-auto" style="gap: 1rem; white-space: nowrap;">
-
+                        <p id="no-books" class="text-muted m-0">Belum ada buku dipilih</p>
                     </div>
                 </div>
             </div>
@@ -78,7 +78,19 @@
     <script src="{{ asset('assets/modules/select2/dist/js/select2.full.min.js') }}"></script>
     <script src="{{ asset('assets/js/stisla.js') }}"></script>
     <script>
+        function checkEmptyBooks() {
+            if ($("#loan-books .book-card").length === 0) {
+                if ($("#no-books").length === 0) {
+                    $("#loan-books").append('<p id="no-books" class="text-muted m-0">Belum ada buku dipilih</p>');
+                }
+            } else {
+                $("#no-books").remove();
+            }
+        }
+
         $(document).ready(function() {
+            checkEmptyBooks();
+
             $('#loan_date').daterangepicker({
                 locale: {
                     format: 'YYYY-MM-DD'
@@ -129,7 +141,7 @@
                 }
 
                 let card = `
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3" id="book-card-${id}">
+                    <div class="book-card col-6 col-sm-4 col-md-3 col-lg-2 mb-3" id="book-card-${id}">
                         <div class="card h-100 shadow-sm position-relative">
                             <img src="${image}" class="card-img-top" alt="${title}" style="height: 150px; object-fit: cover;">
 
@@ -149,12 +161,14 @@
                 `;
 
                 $("#loan-books").append(card);
+                checkEmptyBooks();
             });
 
             // hapus card
             $(document).on('click', '.remove-book', function() {
                 let id = $(this).data('id');
                 $("#book-card-" + id).remove();
+                checkEmptyBooks();
             });
 
             $('#submit-loan').on('click', function() {
@@ -207,10 +221,10 @@
                                 position: 'topCenter'
                             });
                             // reset form
-                            $('#member_id').val('').trigger('change');
-                            $('#loan_date').val('');
-                            $('#loan-books').empty();
-                            fetch_data(1, '');
+                            // $('#member_id').val('').trigger('change');
+                            // $('#loan_date').val('');
+                            // $('#loan-books').empty();
+                            // fetch_data(1, '');
                         },
                         error: function(xhr) {
                             iziToast.error({

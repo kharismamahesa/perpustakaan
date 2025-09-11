@@ -9,13 +9,49 @@ use App\Models\Member;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\DataTables;
 
 class LoanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index()
+    {
+        return view('loan_list');
+    }
+
+    public function data()
+    {
+        $query = Loan::with('member')->select('loans.*');
+        return DataTables::of($query)
+            ->addIndexColumn()
+            ->editColumn('member', function ($loan) {
+                return $loan->member->name ?? '-';
+            })
+            ->editColumn('loan_date', function ($loan) {
+                return $loan->loan_date;
+            })
+            ->editColumn('due_date', function ($loan) {
+                return $loan->due_date;
+            })
+            ->editColumn('status', function ($loan) {
+                return ucfirst($loan->status);
+            })
+            ->editColumn('aksi', function ($loan) {
+                return '<a class="btn btn-sm btn-primary" href="' . route('loans.show', $loan->id) . '">
+                            <i class="fas fa-list"></i> Detail
+                        </a>';
+            })
+            ->rawColumns(['cover_image', 'aksi'])
+            ->make(true);
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create(Request $request)
     {
         $members = Member::all();
 
@@ -44,15 +80,6 @@ class LoanController extends Controller
         return view('loan', compact('members', 'books'));
     }
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
     /**
      * Store a newly created resource in storage.
      */
@@ -76,13 +103,18 @@ class LoanController extends Controller
 
         DB::beginTransaction();
         try {
-            // set tanggal pinjam & jatuh tempo
             $loanDate = Carbon::now();
-            $dueDate = Carbon::now()->addDays(7); // default 7 hari
+            $dueDate = Carbon::now()->addDays(7);
 
-            // simpan master loan
+            $lastLoan = Loan::orderBy('id', 'desc')->first();
+            $nextNumber = $lastLoan && $lastLoan->loan_code
+                ? ((int) substr($lastLoan->loan_code, 1)) + 1
+                : 1;
+            $loanCode = 'P' . str_pad($nextNumber, 10, '0', STR_PAD_LEFT);
+
             $loan = Loan::create([
-                'user_id'    => $request->member_id,
+                'loan_code'  => $loanCode,
+                'member_id'    => $request->member_id,
                 'loan_date'  => $loanDate->toDateString(),
                 'due_date'   => $dueDate->toDateString(),
                 'fine_amount' => 0,
@@ -94,7 +126,7 @@ class LoanController extends Controller
                 LoanDetail::create([
                     'loan_id'  => $loan->id,
                     'book_id'  => $bookId,
-                    'quantity' => 1, // masih default 1
+                    'quantity' => 1, // default 1
                 ]);
             }
 
@@ -103,7 +135,8 @@ class LoanController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Peminjaman berhasil disimpan.',
-                'loan_id' => $loan->id
+                'loan_id' => $loan->id,
+                'loan_code' => $loan->loan_code
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
@@ -119,7 +152,8 @@ class LoanController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $loan = Loan::with(['member', 'details.book'])->findOrFail($id);
+        return view('loan_detail', compact('loan'));
     }
 
     /**

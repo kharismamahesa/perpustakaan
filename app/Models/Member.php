@@ -18,4 +18,9 @@ class Member extends Model
         'registered_date',
         'expired_date',
     ];
+
+    public function member()
+    {
+        return $this->belongsTo(Member::class, 'member_id');
+    }
 }

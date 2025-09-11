@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Loan extends Model
 {
     protected $fillable = [
-        'user_id',
+        'loan_code',
+        'member_id',
         'loan_date',
         'due_date',
         'return_date',
@@ -23,6 +24,6 @@ class Loan extends Model
 
     public function member()
     {
-        return $this->belongsTo(Member::class, 'user_id');
+        return $this->belongsTo(Member::class, 'member_id');
     }
 }
