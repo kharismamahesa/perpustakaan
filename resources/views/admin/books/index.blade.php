@@ -281,8 +281,8 @@
                         className: 'text-center'
                     },
                     {
-                        data: 'quantity',
-                        name: 'quantity'
+                        data: 'available_quantity',
+                        name: 'available_quantity'
                     },
                     {
                         data: 'category',

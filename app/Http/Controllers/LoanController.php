@@ -47,7 +47,6 @@ class LoanController extends Controller
             ->make(true);
     }
 
-
     /**
      * Show the form for creating a new resource.
      */
@@ -121,12 +120,30 @@ class LoanController extends Controller
                 'status'     => 'borrowed',
             ]);
 
-            // simpan detail buku
             foreach ($request->book_ids as $bookId) {
+                $book = Book::findOrFail($bookId);
+
+                // hitung jumlah buku yang sedang dipinjam (belum dikembalikan)
+                $borrowedCount = LoanDetail::where('book_id', $bookId)
+                    ->whereHas('loan', function ($q) {
+                        $q->where('status', 'borrowed');
+                    })
+                    ->count();
+
+                // jika stok habis
+                if ($borrowedCount >= $book->quantity) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Buku '{$book->title}' sedang habis dipinjam."
+                    ], 400);
+                }
+
+                // simpan detail buku
                 LoanDetail::create([
                     'loan_id'  => $loan->id,
                     'book_id'  => $bookId,
-                    'quantity' => 1, // default 1
+                    'quantity' => 1,
                 ]);
             }
 

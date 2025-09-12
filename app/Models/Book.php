@@ -22,4 +22,20 @@ class Book extends Model
     {
         return $this->belongsTo(BookCategory::class, 'category_id');
     }
+
+    public function availableQuantity()
+    {
+        $borrowed = $this->loanDetails()
+            ->whereHas('loan', function ($q) {
+                $q->where('status', 'borrowed');
+            })
+            ->sum('quantity');
+
+        return $this->quantity - $borrowed;
+    }
+
+    public function loanDetails()
+    {
+        return $this->hasMany(LoanDetail::class, 'book_id');
+    }
 }

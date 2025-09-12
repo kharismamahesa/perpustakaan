@@ -27,7 +27,7 @@
                     <td>{{ $book->year }}</td>
                     <td>{{ $book->isbn }}</td>
                     <td>{{ $book->category_name }}</td>
-                    <td>{{ $book->quantity }}</td>
+                    <td>{{ $book->availableQuantity() }}</td>
                     <td>
                         <button type="button" class="btn btn-sm btn-success add-book" data-id="{{ $book->id }}"
                             data-title="{{ $book->title }}" data-author="{{ $book->author }}"

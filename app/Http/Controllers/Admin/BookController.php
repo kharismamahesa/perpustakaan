@@ -48,6 +48,9 @@ class BookController extends Controller
                     }
                     return '-';
                 })
+                ->addColumn('available_quantity', function ($row) {
+                    return $row->availableQuantity();
+                })
                 ->addColumn('aksi', function ($row) {
                     return '<button class="btn btn-sm btn-primary" onclick="editData(' . $row->id . ')">
                             <i class="fas fa-edit"></i> Edit
